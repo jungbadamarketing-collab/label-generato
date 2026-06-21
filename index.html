@@ -101,6 +101,7 @@
     .sheet{border:none;margin:0;}
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -146,6 +147,7 @@
   <div class="row">
     <button class="main" onclick="render()">라벨 생성</button>
     <button class="secondary" onclick="window.print()">인쇄하기</button>
+    <button class="ghost" onclick="exportPNG()">PNG로 저장</button>
   </div>
   <div class="row">
     <button class="ghost" onclick="savePreset()">현재 설정 저장 (.json)</button>
@@ -281,6 +283,36 @@ function render(){
       }
     });
   });
+}
+
+async function exportPNG(){
+  const sheet = document.querySelector('.sheet');
+  if(!sheet){
+    alert('먼저 "라벨 생성"을 눌러주세요.');
+    return;
+  }
+  const btns = document.querySelectorAll('button');
+  btns.forEach(b=>b.disabled = true);
+  const original = sheet.style.border;
+  sheet.style.border = 'none'; // 점선 가이드라인은 저장 이미지에서 제외
+
+  try{
+    const canvas = await html2canvas(sheet, {
+      scale: 3, // 약 288dpi 수준의 고해상도
+      backgroundColor: '#ffffff',
+      useCORS: true
+    });
+    const name = (document.getElementById('speciesName').value || '라벨').trim();
+    const link = document.createElement('a');
+    link.download = `${name}_라벨.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }catch(err){
+    alert('PNG 저장 중 오류가 발생했어요: ' + err.message);
+  }finally{
+    sheet.style.border = original;
+    btns.forEach(b=>b.disabled = false);
+  }
 }
 
 function savePreset(){
