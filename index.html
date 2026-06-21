@@ -132,9 +132,15 @@
     </div>
   </div>
 
-  <div class="field">
-    <label>잉크 농도 (밝게 ↔ 진하게)</label>
-    <input type="range" id="inkShade" min="40" max="160" value="90">
+  <div class="grid2">
+    <div class="field">
+      <label>텍스트 잉크 농도</label>
+      <input type="range" id="textShade" min="40" max="160" value="90">
+    </div>
+    <div class="field">
+      <label>물고기 잉크 농도</label>
+      <input type="range" id="inkShade" min="40" max="160" value="90">
+    </div>
   </div>
 
   <div class="row">
@@ -207,12 +213,16 @@ document.getElementById('inkShade').addEventListener('change', async function(){
   }
 });
 
+document.getElementById('textShade').addEventListener('input', function(){
+  render();
+});
+
 function render(){
   const name = document.getElementById('speciesName').value.trim() || '어종명';
   const rows = parseInt(document.getElementById('rows').value,10) || 29;
   const cols = parseInt(document.getElementById('cols').value,10) || 27;
-  const shade = parseInt(document.getElementById('inkShade').value,10);
-  const inkColor = `rgb(${shade},${shade},${shade})`;
+  const textShade = parseInt(document.getElementById('textShade').value,10);
+  const inkColor = `rgb(${textShade},${textShade},${textShade})`;
 
   const output = document.getElementById('output');
   output.innerHTML = '';
@@ -274,6 +284,7 @@ function savePreset(){
     rows: document.getElementById('rows').value,
     cols: document.getElementById('cols').value,
     inkShade: document.getElementById('inkShade').value,
+    textShade: document.getElementById('textShade').value,
     fishOriginalURL: fishOriginalURL
   };
   const blob = new Blob([JSON.stringify(preset)], {type:'application/json'});
@@ -297,6 +308,7 @@ document.getElementById('presetLoad').addEventListener('change', function(e){
       document.getElementById('rows').value = preset.rows || 29;
       document.getElementById('cols').value = preset.cols || 27;
       document.getElementById('inkShade').value = preset.inkShade || 90;
+      document.getElementById('textShade').value = preset.textShade || preset.inkShade || 90;
       if(preset.fishOriginalURL){
         fishOriginalURL = preset.fishOriginalURL;
         fishDataURL = await recolorImage(fishOriginalURL, parseInt(preset.inkShade || 90,10));
