@@ -174,16 +174,21 @@ function recolorImage(srcDataURL, shade){
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
+      // 흰 배경을 먼저 깔아서, 이후 합성 결과가 완전히 불투명해지도록 함
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(img,0,0);
       const data = ctx.getImageData(0,0,canvas.width,canvas.height);
       const d = data.data;
       for(let i=0;i<d.length;i+=4){
         const brightness = (d[i]+d[i+1]+d[i+2])/3;
-        const alpha = 255 - brightness; // 어두운 픽셀일수록 불투명
-        d[i] = shade;
-        d[i+1] = shade;
-        d[i+2] = shade;
-        d[i+3] = (d[i+3]/255) * alpha;
+        const darkness = (255 - brightness) / 255; // 0(흰색)~1(검정)
+        // 흰 배경(255) 위에 목표 회색(shade)을 darkness 비율로 합성 -> 완전 불투명 결과
+        const finalVal = 255 - darkness * (255 - shade);
+        d[i] = finalVal;
+        d[i+1] = finalVal;
+        d[i+2] = finalVal;
+        d[i+3] = 255; // 항상 불투명 (인쇄 시 도트 패턴으로 번지는 문제 방지)
       }
       ctx.putImageData(data,0,0);
       resolve(canvas.toDataURL('image/png'));
